@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from mywidgets import FileListView, ImageView, ConfigButton, CopyConfigDialog, NoiseConfigDialog
+from constant import Constant
+from image import Image
 
 class AppWindow(QWidget):
 
@@ -31,6 +33,7 @@ class AppWindow(QWidget):
         self.radioBtn1 = QRadioButton("画像コピー")
         self.radioBtn2 = QRadioButton("ノイズ付与")
         self.radioBtn3 = QRadioButton("フィルタリング")
+        self.radioBtn1.setChecked(True)
         self.confBtn1 = ConfigButton("画像コピー設定", width=150)
         self.confBtn2 = ConfigButton("ノイズ付与設定", width=150)
         self.confBtn3 = ConfigButton("フィルタリング設定", width=150)
@@ -94,7 +97,17 @@ class AppWindow(QWidget):
         self.imgView.clear()
 
     def __doubleClickedItem(self, item):
-        self.imgView.setImage(item.data())
+        if self.radioBtn1.isChecked():
+            self.image = Image.reversal(item.data(), self.copyMode)
+        elif self.radioBtn2.isChecked():
+            self.image = Image.addNoise(item.data(),
+                                            self.noiseMode, self.noiseParams)
+        elif self.radioBtn3.isChecked():
+            pass
+        else:
+            pass
+
+        self.imgView.setCvImage(self.image)
 
     def __clickedCopyConfButton(self):
         confDialog = CopyConfigDialog(mode=self.copyMode)

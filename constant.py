@@ -1,0 +1,9 @@
+class Constant:
+
+    LR_REVERSAL_MODE = 1
+    TB_REVERSAL_MODE = 0
+    LRTB_REVERSAL_MODE = -1
+
+    SOLT_NOISE_MODE = 0
+    GAUSSIAN_NOISE_MODE = 1
+
