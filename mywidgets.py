@@ -22,16 +22,16 @@ class TextLine(QLineEdit):
         self.setReadOnly(readmode)
         self.setAlignment(Qt.AlignRight)
 
+
 class HorizontalSlider(QSlider):
 
     def __init__(self, width=300, height=50):
         super().__init__(Qt.Horizontal)
         self.setFixedSize(width, height)
-        self.setValueAndRange()
+        self.initValueAndRange()
         self.valueChanged[int].connect(self.changedValue)
 
-    def setValueAndRange(self, value=None, minimum=0, maximum=100):
-        if value is None: value = minimum
+    def initValueAndRange(self, value=0, minimum=0, maximum=100):
         self.setRange(minimum, maximum)
         self.setValue(value)
 
@@ -167,26 +167,35 @@ class NoiseConfigDialog(ConfigDialog):
         super().__init__()
         self.initUI()
         self.setSelectedNoiseMode(mode)
-        self.setSliderValue(params)
+        self.soltSlider.initValueAndRange(value=params["amountValue"])
+        self.gaussSlider.initValueAndRange(value=params["alphaValue"])
 
     def initUI(self):
         super().initUI()
         self.setWindowTitle("ノイズ付与設定")
         self.layout = QGridLayout()
-        self.slider = HorizontalSlider()
-        self.slider.valueChanged[int].connect(self.changedSliderValue)
-        self.line = QLineEdit()
         self.radioButton1 = QRadioButton("ごま塩ノイズ")
         self.radioButton2 = QRadioButton("gaussianノイズ")
+        self.soltSlider = HorizontalSlider()
+        self.gaussSlider = HorizontalSlider()
+        self.soltValueLine = TextLine(text=str(self.soltSlider.value()),
+                                                width=60, readmode=True)
+        self.gaussValueLine = TextLine(text=str(self.gaussSlider.value()),
+                                                width=60, readmode=True)
         self.buttonGroup = QButtonGroup()
         self.buttonGroup.addButton(self.radioButton1)
         self.buttonGroup.addButton(self.radioButton2)
-        self.valueLine = TextLine(width=60, readmode=True)
+        self.soltSlider.valueChanged[int].connect(self.changedSoltSliderValue)
+        self.gaussSlider.valueChanged[int].connect(self.changedGaussSliderValue)
         self.layout.addWidget(self.radioButton1, 0, 0)
+        self.layout.addWidget(QLabel("ノイズ割合"), 1, 0)
+        self.layout.addWidget(self.soltSlider, 1, 1)
+        self.layout.addWidget(self.soltValueLine, 1, 2)
         self.layout.addWidget(self.radioButton2, 2, 0)
-        self.layout.addWidget(self.slider, 3, 0)
-        self.layout.addWidget(self.valueLine, 3, 1)
-        self.layout.addWidget(self.btnBox, 4, 1)
+        self.layout.addWidget(QLabel("分散"), 3, 0)
+        self.layout.addWidget(self.gaussSlider, 3, 1)
+        self.layout.addWidget(self.gaussValueLine, 3, 2)
+        self.layout.addWidget(self.btnBox, 4, 2)
         self.setLayout(self.layout)
 
     def setSelectedNoiseMode(self, mode):
@@ -201,66 +210,18 @@ class NoiseConfigDialog(ConfigDialog):
         else:
             return self.GaussianNoiseMode
 
-    def setSliderValue(self, value):
-        if value is None: value = self.slider.minimum()
-        self.slider.setValue(value)
-        self.valueLine.setText(str(value))
-
-    def getSliderValue(self):
-        return self.slider.value()
-
-    def changedSliderValue(self, value):
-        self.valueLine.setText(str(value))
-
-
-
-class FilterConfigDialog(ConfigDialog):
-
-    def __init__(self, mode=None, params=None):
-        super().__init__()
-        self.initUI()
-        self.setSelectedNoiseMode(mode)
-        self.setSliderValue(params)
-
-    def initUI(self):
-        super().initUI()
-        self.setWindowTitle("ノイズ付与設定")
-        self.layout = QGridLayout()
-        self.slider = HorizontalSlider()
-        self.slider.valueChanged[int].connect(self.changedSliderValue)
-        self.line = QLineEdit()
-        self.radioButton1 = QRadioButton("ごま塩ノイズ")
-        self.radioButton2 = QRadioButton("gaussianノイズ")
-        self.buttonGroup = QButtonGroup()
-        self.buttonGroup.addButton(self.radioButton1)
-        self.buttonGroup.addButton(self.radioButton2)
-        self.valueLine = TextLine(width=60, readmode=True)
-        self.layout.addWidget(self.radioButton1, 0, 0)
-        self.layout.addWidget(self.radioButton2, 2, 0)
-        self.layout.addWidget(self.slider, 3, 0)
-        self.layout.addWidget(self.valueLine, 3, 1)
-        self.layout.addWidget(self.btnBox, 4, 1)
-        self.setLayout(self.layout)
-
-    def setSelectedNoiseMode(self, mode):
-        if mode == self.SoltNoiseMode or mode is None:
-            self.radioButton1.setChecked(True)
+    def getSelectedNoiseConfig(self):
+        noiseParams = {"amountValue": self.soltSlider.value(),
+                        "alphaValue": self.gaussSlider.value()}
+        if self.getSelectedNoiseMode() == Constant.SOLT_NOISE_MODE:
+            return self.SoltNoiseMode, noiseParams
         else:
-            self.radioButton2.setChecked(True)
+            return self.GaussianNoiseMode, noiseParams
 
-    def getSelectedNoiseMode(self):
-        if self.radioButton1.isChecked():
-            return self.SoltNoiseMode
-        else:
-            return self.GaussianNoiseMode
+    def changedSoltSliderValue(self, value):
+        self.soltValueLine.setText(str(value))
 
-    def setSliderValue(self, value):
-        if value is None: value = self.slider.minimum()
-        self.slider.setValue(value)
-        self.valueLine.setText(str(value))
+    def changedGaussSliderValue(self, value):
+        self.gaussValueLine.setText(str(value))
 
-    def getSliderValue(self):
-        return self.slider.value()
 
-    def changedSliderValue(self, value):
-        self.valueLine.setText(str(value))

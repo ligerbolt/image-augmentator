@@ -36,6 +36,5 @@ class Image:
             noises = np.random.normal(mean, sigma, (height, width, channel))
             noises = noises.reshape(height, width, channel).astype(np.int8)
             noiseImg = (img + noises).astype(np.uint8)
-            print(noises)
         return noiseImg
 

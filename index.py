@@ -87,7 +87,7 @@ class AppWindow(QWidget):
     def setRunningMode(self):
         self.copyMode = None
         self.noiseMode = None
-        self.noiseParams = 0
+        self.noiseParams = {"amountValue": 0, "alphaValue": 0}
 
     def __clickedButton(self):
         directoryPath = QFileDialog.getExistingDirectory(self,
@@ -101,7 +101,7 @@ class AppWindow(QWidget):
             self.image = Image.reversal(item.data(), self.copyMode)
         elif self.radioBtn2.isChecked():
             self.image = Image.addNoise(item.data(),
-                                            self.noiseMode, self.noiseParams)
+                                    self.noiseMode, self.noiseParams)
         elif self.radioBtn3.isChecked():
             pass
         else:
@@ -120,8 +120,7 @@ class AppWindow(QWidget):
         confDialog = NoiseConfigDialog(mode=self.noiseMode,
                                             params=self.noiseParams)
         if confDialog.exec_() == QDialog.Accepted:
-            self.noiseMode = confDialog.getSelectedNoiseMode()
-            self.noiseParams = confDialog.getSliderValue()
+            self.noiseMode, self.noiseParams = confDialog.getSelectedNoiseConfig()
         else:
             pass
 
