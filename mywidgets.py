@@ -160,15 +160,12 @@ class CopyConfigDialog(ConfigDialog):
 
 class NoiseConfigDialog(ConfigDialog):
 
-    SoltNoiseMode = 0
-    GaussianNoiseMode = 1
-
     def __init__(self, mode=None, params=None):
         super().__init__()
         self.initUI()
         self.setSelectedNoiseMode(mode)
-        self.soltSlider.initValueAndRange(value=params["amountValue"])
-        self.gaussSlider.initValueAndRange(value=params["alphaValue"])
+        self.soltSlider.initValueAndRange(value=params["amount"])
+        self.gaussSlider.initValueAndRange(value=params["alpha"])
 
     def initUI(self):
         super().initUI()
@@ -177,6 +174,8 @@ class NoiseConfigDialog(ConfigDialog):
         self.radioButton1 = QRadioButton("ごま塩ノイズ")
         self.radioButton2 = QRadioButton("gaussianノイズ")
         self.soltSlider = HorizontalSlider()
+        self.soltSlider.setTickPosition(QSlider.TicksBelow)
+        self.soltSlider.setTickInterval(20)
         self.gaussSlider = HorizontalSlider()
         self.soltValueLine = TextLine(text=str(self.soltSlider.value()),
                                                 width=60, readmode=True)
@@ -199,29 +198,125 @@ class NoiseConfigDialog(ConfigDialog):
         self.setLayout(self.layout)
 
     def setSelectedNoiseMode(self, mode):
-        if mode == self.SoltNoiseMode or mode is None:
+        if mode == Constant.SOLT_NOISE_MODE or mode is None:
             self.radioButton1.setChecked(True)
         else:
             self.radioButton2.setChecked(True)
 
     def getSelectedNoiseMode(self):
         if self.radioButton1.isChecked():
-            return self.SoltNoiseMode
+            return Constant.SOLT_NOISE_MODE
         else:
-            return self.GaussianNoiseMode
+            return Constant.GAUSSIAN_NOISE_MODE
 
     def getSelectedNoiseConfig(self):
-        noiseParams = {"amountValue": self.soltSlider.value(),
-                        "alphaValue": self.gaussSlider.value()}
-        if self.getSelectedNoiseMode() == Constant.SOLT_NOISE_MODE:
-            return self.SoltNoiseMode, noiseParams
-        else:
-            return self.GaussianNoiseMode, noiseParams
+        noiseParams = {"amount": self.soltSlider.value(),
+                        "alpha": self.gaussSlider.value()}
+        return self.getSelectedNoiseMode(), noiseParams
 
     def changedSoltSliderValue(self, value):
+        value = round((value / 100.0) * 5, 2) + 1
         self.soltValueLine.setText(str(value))
 
     def changedGaussSliderValue(self, value):
         self.gaussValueLine.setText(str(value))
 
+
+class FilterConfigDialog(ConfigDialog):
+
+    def __init__(self, mode=None, params=None):
+        super().__init__()
+        self.initUI()
+        self.setSelectedFilterMode(mode)
+        self.kSizeSlider.initValueAndRange(minimum=2, maximum=20, value=params["ksize"])
+        self.sigmaSlider.initValueAndRange(value=params["sigma"])
+
+    def initUI(self):
+        super().initUI()
+        self.setWindowTitle("フィルタリング（ぼかし）設定")
+        self.layout = QGridLayout()
+        self.gaussBtn = QRadioButton("Gaussianフィルタ")
+        self.aveBtn = QRadioButton("移動平均フィルタ")
+        self.kSizeSlider = HorizontalSlider()
+        self.sigmaSlider = HorizontalSlider()
+        self.kSizeValueLine = TextLine(text=str(self.kSizeSlider.value()),
+                                                    width=50, readmode=True)
+        self.sigmaValueLine = TextLine(text=str(self.sigmaSlider.value()),
+                                                    width=50, readmode=True)
+        self.kSizeSlider.valueChanged[int].connect(self.changedKSizeSliderValue)
+        self.sigmaSlider.valueChanged[int].connect(self.changedSigmaSliderValue)
+        self.layout.addWidget(self.gaussBtn, 0, 0)
+        self.layout.addWidget(self.aveBtn, 0, 1)
+        self.layout.addWidget(QLabel("フィルタサイズ"), 1, 0, Qt.AlignCenter)
+        self.layout.addWidget(self.kSizeSlider, 1, 1, 1, 2)
+        self.layout.addWidget(self.kSizeValueLine, 1, 4)
+        self.layout.addWidget(QLabel("分散"), 2, 0, Qt.AlignCenter)
+        self.layout.addWidget(self.sigmaSlider, 2, 1, 1, 2)
+        self.layout.addWidget(self.sigmaValueLine, 2, 4)
+        self.layout.addWidget(self.btnBox, 4, 4)
+        self.setLayout(self.layout)
+
+    def setSelectedFilterMode(self, mode):
+        if mode == Constant.GAUSSIAN_FILTER_MODE or mode is None:
+            self.gaussBtn.setChecked(True)
+        else:
+            self.aveBtn.setChecked(True)
+
+    def getSelectedFilterMode(self):
+        if self.gaussBtn.isChecked():
+            return Constant.GAUSSIAN_FILTER_MODE
+        else:
+            return Constant.AVERAGE_FILTER_MODE
+
+    def getSelectedFilterConfig(self):
+        filterParams = {"ksize": self.kSizeSlider.value(),
+                        "sigma": self.sigmaSlider.value()}
+        return self.getSelectedFilterMode(), filterParams
+
+    def changedKSizeSliderValue(self, value):
+        self.kSizeValueLine.setText(str(value))
+
+    def changedSigmaSliderValue(self, value):
+        self.sigmaValueLine.setText(str(value))
+
+
+class RotateConfigDialog(ConfigDialog):
+
+    def __init__(self, params=None):
+        super().__init__()
+        self.initUI()
+        self.angleSlider.initValueAndRange(minimum=-180, maximum=180, value=params["angle"])
+        self.scaleSlider.initValueAndRange(minimum=1, maximum=10, value=params["scale"])
+
+    def initUI(self):
+        super().initUI()
+        self.setWindowTitle("回転設定")
+        self.layout = QGridLayout()
+        self.angleSlider = HorizontalSlider()
+        self.scaleSlider = HorizontalSlider()
+        self.angleValueLine = TextLine(text=str(self.angleSlider.value()),
+                                                    width=50, readmode=True)
+        self.scaleValueLine = TextLine(text=str(self.scaleSlider.value()),
+                                                    width=50, readmode=True)
+        self.angleSlider.valueChanged[int].connect(self.changedAngleSliderValue)
+        self.scaleSlider.valueChanged[int].connect(self.changedScaleSliderValue)
+        self.layout.addWidget(QLabel("回転角度"), 0, 0, Qt.AlignCenter)
+        self.layout.addWidget(self.angleSlider, 0, 1, 1, 2)
+        self.layout.addWidget(self.angleValueLine, 0, 4)
+        self.layout.addWidget(QLabel("ズーム倍率"), 1, 0, Qt.AlignCenter)
+        self.layout.addWidget(self.scaleSlider, 1, 1, 1, 2)
+        self.layout.addWidget(self.scaleValueLine, 1, 4)
+        self.layout.addWidget(self.btnBox, 2, 4)
+        self.setLayout(self.layout)
+
+    def getSelectedRotateConfig(self):
+        rotateParams = {"angle": self.angleSlider.value(),
+                        "scale": self.scaleSlider.value()}
+        return rotateParams
+
+    def changedAngleSliderValue(self, value):
+        self.angleValueLine.setText(str(value))
+
+    def changedScaleSliderValue(self, value):
+        self.scaleValueLine.setText(str(value))
 
