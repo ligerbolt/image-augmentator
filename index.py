@@ -10,7 +10,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from mywidgets import (FileListView, ImageView, PushButton,
         CopyConfigDialog, NoiseConfigDialog, FilterConfigDialog,
-        ProgressBarDialog, RotateConfigDialog, HSVConvertConfigDialog)
+        RotateConfigDialog, HSVConvertConfigDialog)
 from constant import Constant
 from image import Image
 import numpy as np
