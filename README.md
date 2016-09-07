@@ -2,6 +2,8 @@
 機械学習に用いる画像学習データの簡易複製ツール
 （いわゆるdata augmentation用）
 
+![スクリーンショット](https://cloud.githubusercontent.com/assets/16964774/18300194/ef2cb336-7501-11e6-9836-cc0539cc21a6.png)
+
 ###開発環境＆使用ライブラリ
 - python 3.5.1
 - OpenCV3（画像処理部）
