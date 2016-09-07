@@ -18,7 +18,7 @@ class Image:
         img = cv2.imread(imgFiles)
         height, width, channel = img.shape
         if mode == Constant.SOLT_NOISE_MODE:
-            amount = params
+            amount = params["amount"] * .01
             noiseImg = img
 
             salt = np.ceil(amount * img.size * 0.5)
@@ -26,13 +26,13 @@ class Image:
                                                     for i in img.shape]
             noiseImg[coords[:-1]] = (255, 255, 255)
 
-            pepper = np.ceil(amount* img.size * (1.0 - 0.5))
+            pepper = np.ceil(amount * img.size * (1.0 - 0.5))
             coords = [np.random.randint(0, i-1 , int(pepper))
                                                     for i in img.shape]
             noiseImg[coords[:-1]] = (0, 0, 0)
         else:
             mean = 0
-            sigma = params
+            sigma = params["sigma"]
             noises = np.random.normal(mean, sigma, (height, width, channel))
             noises = noises.reshape(height, width, channel).astype(np.int8)
             noiseImg = (img + noises).astype(np.uint8)
@@ -50,11 +50,14 @@ class Image:
 
 
     @staticmethod
-    def convertChannelsValue(imgFiles, coefficient, channel=0):
+    def multiplyHSVPixels(imgFiles, params):
         img = cv2.imread(imgFiles)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        img[:,:,channel] = (img[:,:,channel] * coefficient).astype(np.uint8)
-        return cv2.cvtColor(img, cv2.COLOR_HSV2BGR).astype(np.uint8)
+        img[:,:,1] = (img[:,:,1] * params["chroma"]).astype(np.uint8)
+        img[:,:,2] = (img[:,:,2] * params["value"]).astype(np.uint8)
+        img[img < 0] = 0
+        img[img > 255] = 255
+        return cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
 
 
     @staticmethod
