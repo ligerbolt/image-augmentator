@@ -7,12 +7,17 @@ from constant import Constant
 
 class Image:
 
+    """
+        画像反転処理メソッド
+    """
     @staticmethod
     def reversal(imgFiles, mode=Constant.LR_REVERSAL_MODE):
         img = cv2.imread(imgFiles)
         return cv2.flip(img, mode)
 
-
+    """
+        ノイズ付加処理メソッド
+    """
     @staticmethod
     def addNoise(imgFiles, mode, params):
         img = cv2.imread(imgFiles)
@@ -38,7 +43,9 @@ class Image:
             noiseImg = (img + noises).astype(np.uint8)
         return noiseImg
 
-
+    """
+        フィルタリング処理処理メソッド
+    """
     @staticmethod
     def filtering(imgFiles, mode, params):
         img = cv2.imread(imgFiles)
@@ -48,7 +55,9 @@ class Image:
         else:
             return cv2.blur(img, ksize=(kSize, kSize))
 
-
+    """
+        色空間変換処理メソッド
+    """
     @staticmethod
     def multiplyHSVPixels(imgFiles, params):
         img = cv2.imread(imgFiles)
@@ -59,7 +68,9 @@ class Image:
         img[img > 255] = 255
         return cv2.cvtColor(img, cv2.COLOR_HSV2BGR)
 
-
+    """
+        回転処理メソッド
+    """
     @staticmethod
     def rotate(imgFiles, params):
         img = cv2.imread(imgFiles)
